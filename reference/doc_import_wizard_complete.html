@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Import Wizard</title></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#fafafa;--bg3:#f4f5f7;
+  --bd:#e5e5e5;--bd2:#d0d0d0;--bd3:#bbb;
+  --t1:#1a1a1a;--t2:#555;--t3:#888;--t4:#bbb;
+  --r:8px;--r2:12px;--r3:16px;
+  --shadow:0 12px 48px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);
+  --step-bg:#EBF2FF;--step-st:#3B7DE8;--step-tx:#1A3A7A;
+  --deci-bg:#FFFDE7;--deci-st:#C9960A;--deci-tx:#7A5200;
+}
+body{font-family:var(--font-sans,system-ui,sans-serif);font-size:12px;background:transparent}
+
+/* OVERLAY */
+.overlay{position:relative;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:1.5rem;background:rgba(0,0,0,.38)}
+.wiz{width:100%;max-width:860px;background:var(--bg);border-radius:var(--r3);overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--bd2)}
+
+/* HEADER */
+.hd{padding:.9rem 1.4rem .75rem;border-bottom:1px solid var(--bd);background:var(--bg2)}
+.steps{display:flex;align-items:center;margin-bottom:.7rem}
+.si{display:flex;align-items:center;flex:1;min-width:0}
+.dot{width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;letter-spacing:0}
+.dot.done{background:var(--t1);color:#fff}
+.dot.act{background:var(--t1);color:#fff;box-shadow:0 0 0 3px #ddd}
+.dot.idle{background:#f0f0f0;color:var(--t4);border:1px solid #e8e8e8}
+.slbl{font-size:9px;color:var(--t4);margin-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slbl.act{color:var(--t1);font-weight:600}
+.sln{flex:1;height:1px;background:#e8e8e8;margin:0 4px;min-width:3px}
+.htitle{font-size:14px;font-weight:500;color:var(--t1)}
+.hsub{font-size:10px;color:var(--t4);margin-top:2px}
+
+/* SHARED PILLS BAR */
+.pbar{display:flex;align-items:center;gap:3px;padding:.45rem 1.4rem;border-bottom:1px solid #f0f0f0;flex-wrap:wrap;background:var(--bg)}
+.pill{font-size:8px;padding:2px 7px;border-radius:7px;border:1px solid;font-weight:500;cursor:pointer;white-space:nowrap;user-select:none;transition:opacity .15s}
+.pill.off{opacity:.3}
+.pn{font-weight:700;margin-right:2px}
+
+/* BODY */
+.body{min-height:320px}
+.pnl{display:none}.pnl.on{display:block}
+
+/* SECTION TITLES */
+.sec-title{font-size:11px;font-weight:600;color:var(--t1);padding:.65rem 1.4rem .35rem;border-bottom:1px solid #f0f0f0;letter-spacing:-.01em}
+.sec-title span{font-weight:400;color:var(--t4);font-size:10px;margin-left:6px}
+
+/* ── S1 UPLOAD ── */
+.s1{padding:1.1rem 1.4rem}
+.drop{border:1.5px dashed var(--bd2);border-radius:var(--r2);padding:2.2rem 1rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2)}
+.drop:hover{border-color:var(--t1);background:#f7f7f7}
+.drop svg{width:28px;height:28px;margin:0 auto 10px;color:var(--t4);display:block}
+.drop h3{font-size:12px;font-weight:500;color:var(--t1);margin-bottom:3px}
+.drop p{font-size:10px;color:var(--t4)}
+.flist{display:flex;flex-direction:column;gap:5px;margin-top:.85rem}
+.fi{display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--bg2);border-radius:var(--r);cursor:pointer;border:1px solid transparent;transition:border-color .15s}
+.fi:hover,.fi.sel{border-color:var(--t1);background:var(--bg)}
+.ftype{width:26px;height:26px;border-radius:5px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fname{font-size:11px;font-weight:500;color:var(--t1);flex:1}
+.fmeta{font-size:9px;color:var(--t4)}
+.fck{width:14px;height:14px;border-radius:50%;border:1px solid var(--bd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.fck.on{background:var(--t1);border-color:var(--t1)}
+
+/* ── S2 PAGE MAP ── */
+.pm-nav{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1.4rem .4rem}
+.pm-btn{width:22px;height:22px;border-radius:5px;border:1px solid var(--bd);background:var(--bg);cursor:pointer;font-size:11px;color:var(--t2);display:flex;align-items:center;justify-content:center;line-height:1;transition:background .15s}
+.pm-btn:hover{background:var(--bg3)}
+.pm-btn:disabled{opacity:.25;cursor:default}
+.pm-pg{font-size:10px;color:var(--t3);display:flex;align-items:center;gap:4px}
+.pm-pg input{width:28px;text-align:center;border:1px solid var(--bd);border-radius:4px;padding:2px;font-size:10px;color:var(--t1)}
+.pm-pg input:focus{outline:none;border-color:var(--t1)}
+.pm-cols{display:grid;grid-template-columns:148px 1fr;gap:10px;padding:0 1.4rem .6rem}
+.ch{font-size:8px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t4);margin-bottom:.4rem}
+.pg-struct{display:flex;flex-direction:column;gap:3px}
+.pg-bl{display:flex;align-items:center;gap:5px;padding:4px 6px;border-radius:5px;border:1px solid transparent}
+.pg-bl.a{background:var(--bg3);border-color:#ebebeb}
+.pg-ic{width:13px;height:13px;border-radius:2px;font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pg-lb{font-size:9px;color:var(--t2);flex:1}
+.pg-ct{font-size:8px;color:var(--t4);font-family:monospace}
+.pm-right{display:flex;flex-direction:column;gap:5px}
+.ctile{border:1px solid var(--bd);border-radius:6px;overflow:hidden}
+.tth{display:flex;align-items:center;gap:5px;padding:4px 7px;border-bottom:1px solid #f0f0f0}
+.ttype{font-size:7px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.ttitle{font-size:9px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttb{padding:4px 7px 5px}
+.tdesc{font-size:9px;color:var(--t3);line-height:1.45;margin-bottom:4px}
+.tbar{display:flex;align-items:center;gap:5px}
+.tbl{font-size:7px;color:var(--t4);width:48px;flex-shrink:0}
+.ttrk{flex:1;height:2px;background:#f0f0f0;border-radius:1px}
+.tfil{height:100%;border-radius:1px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.tpct{font-size:7px;color:var(--t4);font-family:monospace;width:22px;text-align:right}
+.pm-foot{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:.4rem 1.4rem .6rem;border-top:1px solid #f0f0f0}
+.kwl{font-size:8px;color:var(--t4);font-weight:600;flex-shrink:0}
+.kwtag{font-size:8px;padding:1px 6px;border-radius:6px;background:var(--bg);border:1px solid var(--bd);color:var(--t3)}
+
+/* ── S3 SETTINGS ── */
+.s3{padding:.7rem 1.4rem}
+.sel-lbl{font-size:10px;color:var(--t3);margin-bottom:4px;font-weight:500}
+.model-opts{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.9rem}
+.mopt{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:var(--r);border:1px solid var(--bd);background:var(--bg);cursor:pointer;transition:all .15s;font-size:10px;color:var(--t2);font-weight:500;user-select:none}
+.mopt:hover{border-color:var(--t1)}
+.mopt.on{border-color:var(--t1);background:var(--t1);color:#fff}
+.mopt.add{border-style:dashed;color:var(--t4)}
+.mopt.add:hover{border-color:var(--bd3);color:var(--t3)}
+.mico{width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
+.mopt.on .mico{background:rgba(255,255,255,.15)}
+.out-select{width:100%;padding:6px 9px;border-radius:var(--r);border:1px solid var(--bd);background:var(--bg2);color:var(--t1);font-size:11px;font-family:inherit;margin-bottom:.75rem}
+.srows{display:flex;flex-direction:column}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5}
+.srow:last-child{border-bottom:none}
+.srow-l{flex:1}
+.srow-title{font-size:11px;color:var(--t1)}
+.srow-sub{font-size:9px;color:var(--t4);margin-top:1px}
+.tog{position:relative;width:30px;height:17px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.tk{position:absolute;inset:0;background:#e5e5e5;border-radius:9px;cursor:pointer;transition:background .2s}
+.tk::before{content:'';position:absolute;width:12px;height:12px;top:2.5px;left:2.5px;background:#fff;border-radius:50%;transition:transform .2s}
+input:checked+.tk{background:var(--t1)}
+input:checked+.tk::before{transform:translateX(13px)}
+
+/* ── S4 REVIEW ── */
+.bar-wrap{padding:.55rem 1.4rem .45rem;border-bottom:1px solid #f0f0f0}
+.bar-lbl{font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t4);margin-bottom:.4rem;display:flex;align-items:center;gap:5px}
+.dh{font-weight:400;color:#ddd;letter-spacing:0}
+.cscroll{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.cscroll::-webkit-scrollbar{display:none}
+.cbox{flex-shrink:0;width:138px;border-radius:var(--r);border:1px solid var(--bd);border-left:3px solid;padding:7px 8px;cursor:pointer;transition:all .2s;background:var(--bg);user-select:none}
+.cbox:hover{border-top-color:#bbb;border-right-color:#bbb;border-bottom-color:#bbb}
+.cbox.active{background:var(--bg2);box-shadow:0 0 0 1.5px var(--t1) inset}
+.cbox.dimmed{opacity:.25}
+.cbox.drag-over{opacity:.5;border-top-style:dashed;border-right-style:dashed;border-bottom-style:dashed}
+.cbox.dragging-item{opacity:.3;transform:scale(.95)}
+.ctop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:3px}
+.calpha{font-size:8px;font-weight:700;color:#fff;width:15px;height:15px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cdrag{font-size:10px;color:var(--t4);cursor:grab;line-height:1}
+.cname{font-size:9px;font-weight:600;color:var(--t1);margin-bottom:2px;line-height:1.3}
+.ccount{font-size:7px;color:var(--t4);margin-bottom:3px;font-family:monospace}
+.cthemes{display:flex;flex-wrap:wrap;gap:2px}
+.ctheme{font-size:7px;padding:1px 4px;border-radius:4px;border:1px solid;font-weight:500}
+.meta-row{display:flex;align-items:center;gap:3px;padding:.4rem 1.4rem;border-bottom:1px solid #f0f0f0;flex-wrap:wrap}
+.mpill{font-size:8px;padding:2px 7px;border-radius:7px;border:1px solid;font-weight:500;white-space:nowrap}
+.mn{font-weight:700;margin-right:2px}
+.slist{padding:.5rem .8rem .6rem;display:flex;flex-direction:column;gap:2px;max-height:240px;overflow-y:auto}
+.gh{display:flex;align-items:center;gap:4px;padding:5px 4px 2px;margin-top:5px}
+.gh:first-child{margin-top:0}
+.gha{font-size:7px;font-weight:700;color:#fff;width:14px;height:14px;border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ghp{font-size:7px;padding:1px 6px;border-radius:4px;border:1px solid;font-weight:500}
+.ghc{font-size:7px;color:var(--t4);margin-left:auto;font-family:monospace}
+.pw{margin-bottom:1px}
+.pr{display:grid;grid-template-columns:22px 14px 1fr 82px 16px;align-items:center;gap:5px;padding:6px 7px;border-radius:var(--r);border:1px solid var(--bd);background:var(--bg2);cursor:pointer;transition:border-color .15s}
+.pr:hover{border-color:var(--bd3)}
+.pr.exp{background:var(--bg)}
+.pnum{width:19px;height:19px;border-radius:50%;color:#fff;font-size:8px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.plbl{font-size:10px;font-weight:500;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pconn{font-size:7px;color:var(--t4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tsel{font-size:7px;padding:2px 3px;border-radius:4px;border:1px solid;font-family:inherit;cursor:pointer;width:100%}
+.xbtn{width:15px;height:15px;border-radius:3px;border:1px solid #eee;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t4);font-size:8px;transition:all .15s;flex-shrink:0}
+.xbtn:hover{background:#fef2f2;border-color:#fecaca;color:#ef4444}
+.stw{padding-left:12px;display:flex;flex-direction:column;gap:1px;margin-top:1px}
+.str{display:grid;grid-template-columns:20px 13px 1fr 82px 16px;align-items:center;gap:5px;padding:4px 7px;border-radius:4px;border:1px solid transparent}
+.str:hover{background:var(--bg2);border-color:#f0f0f0}
+.snum{font-size:8px;color:var(--t4);font-family:monospace;text-align:right}
+.slbx{font-size:9px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scn{font-size:7px;color:var(--t4)}
+
+/* ── S5 CANVAS ── */
+.cfilter{display:flex;gap:4px;flex-wrap:wrap;padding:.5rem 1.4rem .35rem;border-bottom:1px solid #f0f0f0}
+.ctag{font-size:9px;padding:3px 9px;border-radius:10px;border:1px solid;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;user-select:none}
+.ctag.active{box-shadow:0 0 0 1.5px var(--t1)}
+.ctag.dimmed{opacity:.25}
+.canvas-wrap{position:relative;background:#edf0f9}
+.toolbar{display:flex;align-items:center;gap:2px;padding:.32rem .9rem;border-bottom:1px solid #d8dcea;background:#f4f6fc}
+.tb-sep{width:1px;height:15px;background:#d8dcea;margin:0 4px}
+.tb-btn{width:26px;height:26px;border-radius:5px;border:1px solid transparent;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--t2);flex-shrink:0}
+.tb-btn:hover{background:#e6e9f4;border-color:#cdd0e0}
+.tb-btn.on{background:var(--t1);border-color:var(--t1);color:#fff}
+.tb-btn svg{width:13px;height:13px}
+.tb-zoom{font-size:10px;color:var(--t3);min-width:38px;text-align:center;font-family:monospace;cursor:pointer;padding:2px 4px;border-radius:4px;transition:background .15s}
+.tb-zoom:hover{background:#e6e9f4;color:var(--t1)}
+.tb-cl{font-size:10px;font-weight:500;color:var(--t2)}
+.tb-cnt{font-size:9px;padding:2px 7px;border-radius:5px;border:1px solid;font-weight:500;white-space:nowrap}
+.tb-hint{font-size:8px;color:#b0b5cc;margin-left:auto}
+.viewport{overflow:hidden;height:400px;position:relative;cursor:default}
+.viewport.hand{cursor:grab}
+.viewport.hand.panning{cursor:grabbing}
+.ci{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
+.zc{position:absolute;bottom:12px;left:12px;display:flex;flex-direction:column;gap:2px;z-index:10}
+.zcb{width:24px;height:24px;border-radius:5px;border:1px solid #ccd0de;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--t2);line-height:1;transition:background .15s;box-shadow:0 1px 3px rgba(0,0,0,.09)}
+.zcb:hover{background:#f0f1f7}
+.mmap{position:absolute;bottom:12px;right:12px;width:108px;height:68px;border:1px solid #ccd0de;border-radius:6px;background:#fff;overflow:hidden;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.mmi{position:absolute;transform-origin:0 0;pointer-events:none}
+.mmv{position:absolute;border:1.5px solid var(--t1);border-radius:2px;background:rgba(26,26,26,.07);pointer-events:none}
+
+/* legend */
+.legend{display:flex;align-items:center;gap:10px;padding:.35rem 1.4rem;border-top:1px solid #e0e3ee;background:#f4f6fc;flex-wrap:wrap}
+.lg-item{display:flex;align-items:center;gap:4px;font-size:8px;color:var(--t3)}
+.lg-box{width:12px;height:9px;border-radius:2px;flex-shrink:0}
+.lg-dia{width:12px;height:12px;transform:rotate(45deg);border-radius:1px;flex-shrink:0}
+.lg-circ{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── S6 COMPLETE ── */
+.s6{display:grid;grid-template-columns:1fr 1fr;min-height:320px}
+.s6-l{padding:1.1rem 1.4rem;border-right:1px solid #f0f0f0}
+.s6-r{padding:1.1rem 1.4rem}
+.s6-title{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:.65rem;display:flex;align-items:center;gap:7px}
+.s6-chk{width:17px;height:17px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.s6-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f5f5}
+.s6-row:last-child{border-bottom:none}
+.s6-k{font-size:10px;color:var(--t3)}
+.s6-v{font-size:11px;font-weight:600;color:var(--t1)}
+.s6-sub{font-size:9px;color:var(--t4);margin-bottom:.7rem}
+.val-blk{margin-top:.7rem;padding-top:.6rem;border-top:1px solid #f0f0f0}
+.val-sec{font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t4);margin-bottom:5px}
+.val-row{display:flex;align-items:center;gap:5px;padding:2px 0;font-size:9px}
+.vdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.fmt-list{display:flex;flex-direction:column;gap:4px}
+.fmt{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:var(--r);border:1px solid var(--bd);cursor:pointer;transition:all .15s;user-select:none}
+.fmt:hover{border-color:var(--bd3)}
+.fmt.on{border-color:var(--t1);background:var(--bg2)}
+.fmt-ico{width:20px;height:20px;border-radius:4px;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#f0f0f0;color:var(--t2);transition:all .15s}
+.fmt.on .fmt-ico{background:var(--t1);color:#fff}
+.fmt-name{font-size:10px;font-weight:500;color:var(--t1);flex:1}
+.fmt-desc{font-size:8px;color:var(--t4)}
+.fmt-ck{width:13px;height:13px;border-radius:50%;border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;background:var(--bg);flex-shrink:0;transition:all .15s}
+.fmt.on .fmt-ck{background:var(--t1);border-color:var(--t1)}
+
+/* FOOTER */
+.ft{padding:.65rem 1.4rem;border-top:1px solid var(--bd);display:flex;align-items:center;gap:6px;background:var(--bg2)}
+.btn{padding:5px 14px;border-radius:var(--r);font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--bd);background:var(--bg);color:var(--t1);font-family:inherit;transition:all .15s}
+.btn:hover{background:var(--bg3)}
+.btn.pri{background:var(--t1);color:#fff;border-color:var(--t1);margin-left:auto}
+.btn.pri:hover{background:#333}
+.btn.ghost{border-color:var(--bd3);color:var(--t2)}
+.step-info{font-size:9px;color:var(--t4)}
+</style>
+
+<div class="overlay">
+<div class="wiz">
+
+<!-- HEADER -->
+<div class="hd">
+  <div class="steps">
+    <div class="si"><div class="dot act" id="d1">1</div><span class="slbl act" id="l1">Upload</span></div>
+    <div class="sln"></div>
+    <div class="si"><div class="dot idle" id="d2">2</div><span class="slbl" id="l2">Page map</span></div>
+    <div class="sln"></div>
+    <div class="si"><div class="dot idle" id="d3">3</div><span class="slbl" id="l3">Settings</span></div>
+    <div class="sln"></div>
+    <div class="si"><div class="dot idle" id="d4">4</div><span class="slbl" id="l4">Review</span></div>
+    <div class="sln"></div>
+    <div class="si"><div class="dot idle" id="d5">5</div><span class="slbl" id="l5">Preview</span></div>
+    <div class="sln"></div>
+    <div class="si"><div class="dot idle" id="d6">6</div><span class="slbl" id="l6">Complete</span></div>
+  </div>
+  <div class="htitle" id="htitle">Select your document</div>
+  <div class="hsub" id="hsub">PDF, DOCX or TXT — up to 50 MB</div>
+</div>
+
+<!-- PILLS (injected per step) -->
+<div class="pbar" id="pbar" style="display:none"></div>
+
+<div class="body">
+
+<!-- S1 -->
+<div class="pnl on" id="p1">
+<div class="sec-title">Files <span>Select document to import</span></div>
+<div class="s1">
+  <div class="drop" onclick="showFiles()">
+    <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <rect x="4" y="2" width="20" height="28" rx="3"/><path d="M20 2l8 8h-8V2z"/>
+      <path d="M18 20v8M14 24l4-4 4 4"/>
+    </svg>
+    <h3>Drop file here or click to browse</h3>
+    <p>PDF · DOCX · TXT · HTML — up to 50 MB</p>
+  </div>
+  <div class="flist" id="flist" style="display:none">
+    <div class="fi sel" onclick="pick(this)">
+      <div class="ftype" style="background:#fef2f2;color:#991b1b">PDF</div>
+      <div style="flex:1"><div class="fname">CS_Training_Manual_v3.pdf</div><div class="fmeta">142 pages · 38 MB</div></div>
+      <div class="fck on"><svg width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="fi" onclick="pick(this)">
+      <div class="ftype" style="background:#eff6ff;color:#1e40af">DOC</div>
+      <div style="flex:1"><div class="fname">KYC_Escalation_Procedures.docx</div><div class="fmeta">28 pages · 9 MB</div></div>
+      <div class="fck"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- S2 -->
+<div class="pnl" id="p2">
+  <div class="pm-nav">
+    <button class="pm-btn" id="pmP" onclick="pmGo(-1)" disabled>&#8592;</button>
+    <div class="pm-pg">p.<input type="number" id="pmI" value="1" min="1" max="142" onchange="pmJump(this.value)"/> of 142</div>
+    <button class="pm-btn" id="pmN" onclick="pmGo(1)">&#8594;</button>
+  </div>
+  <div class="pm-cols">
+    <div><div class="ch">Page structure</div><div class="pg-struct" id="pgS"></div></div>
+    <div><div class="ch">Import interpretation</div><div class="pm-right" id="pgR"></div></div>
+  </div>
+  <div class="pm-foot" id="pmF"></div>
+</div>
+
+<!-- S3 -->
+<div class="pnl" id="p3">
+<div class="s3">
+  <div class="sel-lbl">Import model</div>
+  <div class="model-opts" id="modelOpts">
+    <div class="mopt" onclick="selMod(this)"><div class="mico" style="background:#f0f0f0;color:#555">Rw</div>Raw</div>
+    <div class="mopt" onclick="selMod(this)"><div class="mico" style="background:#e0f2fe;color:#0369a1">Wz</div>Wizard</div>
+    <div class="mopt on" onclick="selMod(this)"><div class="mico">G</div>Gemini</div>
+    <div class="mopt" onclick="selMod(this)"><div class="mico" style="background:#fef3c7;color:#92400e">A\</div>Claude</div>
+    <div class="mopt add" onclick="alert('Add model integration — coming soon')">+ Add new</div>
+  </div>
+  <div class="sel-lbl">Output type</div>
+  <select class="out-select"><option>User journey flow diagram</option><option>Swimlane process map</option><option>Decision tree</option></select>
+  <div class="srows">
+    <div class="srow"><div class="srow-l"><div class="srow-title">Actor lanes</div><div class="srow-sub">Group steps by role</div></div><label class="tog"><input type="checkbox" checked><span class="tk"></span></label></div>
+    <div class="srow"><div class="srow-l"><div class="srow-title">Decision nodes</div><div class="srow-sub">Branch points and conditions</div></div><label class="tog"><input type="checkbox" checked><span class="tk"></span></label></div>
+    <div class="srow"><div class="srow-l"><div class="srow-title">System references</div><div class="srow-sub">NR1, Zendesk, PSP</div></div><label class="tog"><input type="checkbox" checked><span class="tk"></span></label></div>
+    <div class="srow"><div class="srow-l"><div class="srow-title">Confidence labels</div><div class="srow-sub">Show % on each node</div></div><label class="tog"><input type="checkbox"><span class="tk"></span></label></div>
+    <div class="srow"><div class="srow-l"><div class="srow-title">Cross-cluster connections</div><div class="srow-sub">Show inter-cluster edges</div></div><label class="tog"><input type="checkbox" checked><span class="tk"></span></label></div>
+  </div>
+</div>
+</div>
+
+<!-- S4 -->
+<div class="pnl" id="p4">
+  <div class="bar-wrap">
+    <div class="bar-lbl">Clusters <span class="dh">— drag to reorder</span></div>
+    <div class="cscroll" id="cscroll"></div>
+  </div>
+  <div class="meta-row" id="metaRow">
+    <span class="mpill" style="background:#FAEEDA;border-color:#EF9F27;color:#633806"><span class="mn">66</span>Processes</span>
+    <span class="mpill" style="background:#FAECE7;border-color:#F0997B;color:#712B13"><span class="mn">12</span>Sub-processes</span>
+    <span class="mpill" style="background:#EAF3DE;border-color:#97C459;color:#27500A"><span class="mn">38</span>Steps</span>
+    <span class="mpill" style="background:#F5F3FF;border-color:#DDD6FE;color:#5B21B6"><span class="mn">11</span>Connections</span>
+    <span class="mpill" style="background:#E1F5EE;border-color:#5DCAA5;color:#085041"><span class="mn">8</span>Facts / policies</span>
+    <span class="mpill" style="background:#fef2f2;border-color:#fecaca;color:#ef4444"><span class="mn">3</span>Unassigned</span>
+  </div>
+  <div class="sec-title">Processes <span>Click row number to expand steps</span></div>
+  <div class="slist" id="slist"></div>
+</div>
+
+<!-- S5 -->
+<div class="pnl" id="p5">
+  <div class="sec-title">Clusters <span>Select to filter flow map</span></div>
+  <div class="cfilter" id="cfilter"></div>
+  <div class="sec-title" style="border-top:1px solid #f0f0f0">Processes / Steps flow map <span>Read only — zoom · pan · H/V keys</span></div>
+  <div class="canvas-wrap">
+    <div class="toolbar">
+      <button class="tb-btn on" id="tbSel" title="Select (V)" onclick="setTool('select')">
+        <svg viewBox="0 0 13 13" fill="none"><path d="M2 2l4 8.5 1.4-3.2L11.5 6 2 2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" fill="currentColor" fill-opacity=".15"/></svg>
+      </button>
+      <button class="tb-btn" id="tbHand" title="Pan (H)" onclick="setTool('hand')">
+        <svg viewBox="0 0 13 13" fill="none"><path d="M5 1.5v5M7.5 2.5v4M10 4v3.5M2.5 5.5v2c0 2.2 1.6 4 4.5 4s4.5-1.8 4.5-4V7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" title="Zoom out" onclick="doZoom(-0.15)">
+        <svg viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 5.5h4M8.5 8.5l2.5 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </button>
+      <span class="tb-zoom" id="zoomLbl" onclick="resetView()">100%</span>
+      <button class="tb-btn" title="Zoom in" onclick="doZoom(0.15)">
+        <svg viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 5.5h4M5.5 3.5v4M8.5 8.5l2.5 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="tb-btn" title="Fit to view" onclick="fitView()">
+        <svg viewBox="0 0 13 13" fill="none"><path d="M1.5 4V1.5H4M9 1.5h2.5V4M11.5 9v2.5H9M4 11.5H1.5V9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="tb-sep"></div>
+      <span class="tb-cl" id="tbName">Withdrawals &amp; Cashier</span>&nbsp;
+      <span class="tb-cnt" id="tbCnt">22 processes</span>
+      <span class="tb-hint">Scroll to zoom · H pan · V select</span>
+    </div>
+    <div class="viewport" id="vp">
+      <div class="ci" id="ci"></div>
+      <div class="zc">
+        <div class="zcb" onclick="doZoom(0.2)">+</div>
+        <div class="zcb" onclick="doZoom(-0.2)">−</div>
+      </div>
+      <div class="mmap" id="mmap">
+        <div class="mmi" id="mmi"></div>
+        <div class="mmv" id="mmv"></div>
+      </div>
+    </div>
+    <div class="legend">
+      <span style="font-size:8px;color:#888;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-right:4px">Legend</span>
+      <div class="lg-item"><div class="lg-circ" style="background:#22c55e"></div>Start</div>
+      <div class="lg-item"><div class="lg-box" style="background:#EBF2FF;border:1.5px solid #3B7DE8"></div>Action / step</div>
+      <div class="lg-item"><div class="lg-dia" style="background:#FFFDE7;border:1.5px solid #C9960A"></div>Decision</div>
+      <div class="lg-item"><div class="lg-circ" style="background:#ef4444"></div>End</div>
+      <span style="font-size:8px;color:#b0b5cc;margin-left:auto">Read only — edit in step 4</span>
+    </div>
+  </div>
+</div>
+
+<!-- S6 -->
+<div class="pnl" id="p6">
+<div class="s6">
+  <div class="s6-l">
+    <div class="s6-title">
+      <div class="s6-chk"><svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      Import complete
+    </div>
+    <div class="s6-row"><span class="s6-k">Document</span><span class="s6-v" style="font-size:9px;font-weight:400;color:#555">CS_Training_Manual_v3.pdf</span></div>
+    <div class="s6-row"><span class="s6-k">Clusters</span><span class="s6-v">8</span></div>
+    <div class="s6-row"><span class="s6-k">Themes</span><span class="s6-v">7</span></div>
+    <div class="s6-row"><span class="s6-k">Processes</span><span class="s6-v">66</span></div>
+    <div class="s6-row"><span class="s6-k">Sub-processes</span><span class="s6-v">12</span></div>
+    <div class="s6-row"><span class="s6-k">Steps</span><span class="s6-v">38</span></div>
+    <div class="s6-row"><span class="s6-k">Connections</span><span class="s6-v">11</span></div>
+    <div class="s6-row"><span class="s6-k">Facts / policies</span><span class="s6-v">8</span></div>
+    <div class="s6-row"><span class="s6-k">Unassigned</span><span class="s6-v" style="color:#ef4444">3</span></div>
+    <div class="val-blk">
+      <div class="val-sec">Validation</div>
+      <div class="val-row"><div class="vdot" style="background:#22c55e"></div><span style="color:#166534">No disconnected nodes</span></div>
+      <div class="val-row"><div class="vdot" style="background:#22c55e"></div><span style="color:#166534">All decisions have ≥2 exits</span></div>
+      <div class="val-row"><div class="vdot" style="background:#f59e0b"></div><span style="color:#92400e">3 optional fields missing</span></div>
+    </div>
+  </div>
+  <div class="s6-r">
+    <div class="s6-title">Export to</div>
+    <div class="s6-sub">Select format then open in editor</div>
+    <div class="fmt-list">
+      <div class="fmt on" onclick="selFmt(this)"><div class="fmt-ico">Mm</div><div><div class="fmt-name">Mermaid</div><div class="fmt-desc">Live text + preview</div></div><div class="fmt-ck"><svg width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="fmt" onclick="selFmt(this)"><div class="fmt-ico">PM</div><div><div class="fmt-name">Process-Map-V1</div><div class="fmt-desc">Semantic process model</div></div><div class="fmt-ck"></div></div>
+      <div class="fmt" onclick="selFmt(this)"><div class="fmt-ico">Bx</div><div><div class="fmt-name">BPMN XML</div><div class="fmt-desc">Standard process notation</div></div><div class="fmt-ck"></div></div>
+      <div class="fmt" onclick="selFmt(this)"><div class="fmt-ico">JS</div><div><div class="fmt-name">JSON</div><div class="fmt-desc">Node-link graph</div></div><div class="fmt-ck"></div></div>
+      <div class="fmt" onclick="selFmt(this)"><div class="fmt-ico">Cv</div><div><div class="fmt-name">CSV</div><div class="fmt-desc">Flat process table</div></div><div class="fmt-ck"></div></div>
+      <div class="fmt" onclick="selFmt(this)"><div class="fmt-ico">Pd</div><div><div class="fmt-name">PDF</div><div class="fmt-desc">Printable diagram</div></div><div class="fmt-ck"></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div><!-- /body -->
+
+<div class="ft">
+  <button class="btn" id="bback" onclick="go(-1)" style="visibility:hidden">← Back</button>
+  <span class="step-info" id="sinfo">Step 1 of 6</span>
+
+  <button class="btn pri" id="bnext" onclick="go(1)">Continue →</button>
+</div>
+
+</div>
+</div>
+
+<script>
+var cur=1;
+var TITLES=['Select your document','Page map','Settings','Review & edit structure','Preview','Import complete'];
+var SUBS=['PDF, DOCX or TXT — up to 50 MB','Page by page — structure left, interpretation right','Configure import model and output options','Inspect clusters, reorder and edit before importing','Review process diagrams — read only','Your document has been imported successfully'];
+
+var PILLS_HTML=''
+  +'<span class="pill" data-t="all" style="background:#1a1a1a;border-color:#1a1a1a;color:#fff"><span class="pn">93</span>All</span>'
+  +'<span class="pill" data-t="theme" style="background:#f1efe8;border-color:#D3D1C7;color:#444441"><span class="pn">7</span>Themes</span>'
+  +'<span class="pill" data-t="cluster" style="background:#E6F1FB;border-color:#85B7EB;color:#0C447C"><span class="pn">8</span>Clusters</span>'
+  +'<span class="pill" data-t="actor" style="background:#EEEDFE;border-color:#AFA9EC;color:#3C3489"><span class="pn">6</span>Actors</span>'
+  +'<span class="pill" data-t="process" style="background:#FAEEDA;border-color:#EF9F27;color:#633806"><span class="pn">66</span>Processes</span>'
+  +'<span class="pill" data-t="subprocess" style="background:#FAECE7;border-color:#F0997B;color:#712B13"><span class="pn">12</span>Sub-processes</span>'
+  +'<span class="pill" data-t="action" style="background:#EAF3DE;border-color:#97C459;color:#27500A"><span class="pn">38</span>Steps</span>'
+  +'<span class="pill" data-t="connection" style="background:#F5F3FF;border-color:#DDD6FE;color:#5B21B6"><span class="pn">11</span>Connections</span>'
+  +'<span class="pill" data-t="fact" style="background:#E1F5EE;border-color:#5DCAA5;color:#085041"><span class="pn">8</span>Facts / policies</span>'
+  +'<span class="pill" data-t="unc" style="background:#fafafa;border-color:#e5e5e5;color:#999"><span class="pn">3</span>Unclassified</span>';
+
+var CLUSTERS=[
+  {id:'acct', name:'Core Concepts\n& Account Mgmt', color:'#5F5E5A',tc:'#f1efe8',bc:'#D3D1C7',themes:[{l:'Onboarding',bg:'#f1efe8',bc:'#D3D1C7',tc:'#444441'},{l:'Player Lifecycle',bg:'#f1efe8',bc:'#D3D1C7',tc:'#444441'}],count:8},
+  {id:'with', name:'Withdrawals\n& Cashier',         color:'#BA7517',tc:'#FAEEDA',bc:'#EF9F27',themes:[{l:'Financial Flow',bg:'#FAEEDA',bc:'#EF9F27',tc:'#633806'},{l:'Cancellation',bg:'#FAEEDA',bc:'#EF9F27',tc:'#633806'}],count:22},
+  {id:'pay',  name:'Payments\n& Deposits',           color:'#3B6D11',tc:'#EAF3DE',bc:'#97C459',themes:[{l:'Financial Flow',bg:'#EAF3DE',bc:'#97C459',tc:'#27500A'},{l:'PSP',bg:'#EAF3DE',bc:'#97C459',tc:'#27500A'}],count:18},
+  {id:'risk', name:'Verification\n& Risk',           color:'#993C1D',tc:'#FAECE7',bc:'#F0997B',themes:[{l:'KYC',bg:'#FAECE7',bc:'#F0997B',tc:'#712B13'},{l:'AML',bg:'#FAECE7',bc:'#F0997B',tc:'#712B13'},{l:'Compliance',bg:'#FAECE7',bc:'#F0997B',tc:'#712B13'}],count:16},
+  {id:'safe', name:'Account Status\n& Safety',       color:'#993556',tc:'#FBEAF0',bc:'#ED93B1',themes:[{l:'Responsible Gaming',bg:'#FBEAF0',bc:'#ED93B1',tc:'#72243E'},{l:'Self-Exclusion',bg:'#FBEAF0',bc:'#ED93B1',tc:'#72243E'}],count:9},
+  {id:'bonus',name:'Bonuses\n& Gamification',        color:'#534AB7',tc:'#EEEDFE',bc:'#AFA9EC',themes:[{l:'Promotions',bg:'#EEEDFE',bc:'#AFA9EC',tc:'#3C3489'},{l:'Rewards',bg:'#EEEDFE',bc:'#AFA9EC',tc:'#3C3489'}],count:10},
+  {id:'sport',name:'Sports\nBetting',                color:'#0F6E56',tc:'#E1F5EE',bc:'#5DCAA5',themes:[{l:'Live Betting',bg:'#E1F5EE',bc:'#5DCAA5',tc:'#085041'}],count:7},
+  {id:'data', name:'User Data\n& Support',           color:'#185FA5',tc:'#E6F1FB',bc:'#85B7EB',themes:[{l:'Player Comms',bg:'#E6F1FB',bc:'#85B7EB',tc:'#0C447C'},{l:'Escalation',bg:'#E6F1FB',bc:'#85B7EB',tc:'#0C447C'}],count:14},
+];
+
+var PM_PAGES=[
+  {blocks:[{t:'title',l:'Title',i:'T',n:1,a:true,bg:'#eff6ff',ic:'#3b82f6'},{t:'section',l:'Section heading',i:'H',n:2,a:true,bg:'#fdf4ff',ic:'#a855f7'},{t:'body',l:'Body text',i:'B',n:3,a:true,bg:'#f5f5f5',ic:'#888'},{t:'bullet',l:'Bullet list',i:'·',n:1,a:false,bg:'#fff7ed',ic:'#f97316'},{t:'keyword',l:'Keywords',i:'K',n:4,a:true,bg:'#f0fdf4',ic:'#16a34a'}],
+   tiles:[{tl:'Category header',tc:'#eff6ff',tb:'#bfdbfe',tt:'#1e40af',ti:'Withdrawals',td:'Top-level section covering all withdrawal procedures.',cf:97},{tl:'Section header',tc:'#f0fdf4',tb:'#bbf7d0',tt:'#166534',ti:'Player self-cancellation',td:'Player-initiated withdrawal cancellation workflow.',cf:91},{tl:'Process',tc:'#FAEEDA',tb:'#EF9F27',tt:'#633806',ti:'Cancelling a withdrawal — steps',td:'Sequential agent steps to cancel pending withdrawal.',cf:95}],kw:['withdrawal','cancellation','NR1','pending','player request']},
+  {blocks:[{t:'section',l:'Section heading',i:'H',n:1,a:true,bg:'#fdf4ff',ic:'#a855f7'},{t:'body',l:'Body text',i:'B',n:4,a:true,bg:'#f5f5f5',ic:'#888'},{t:'screenshot',l:'Screenshot',i:'S',n:1,a:true,bg:'#f5f3ff',ic:'#7c3aed'},{t:'bullet',l:'Bullet list',i:'·',n:2,a:true,bg:'#fff7ed',ic:'#f97316'},{t:'keyword',l:'Keywords',i:'K',n:3,a:false,bg:'#f0fdf4',ic:'#16a34a'}],
+   tiles:[{tl:'Screenshot',tc:'#f5f3ff',tb:'#ddd6fe',tt:'#5b21b6',ti:'Finance UI screen',td:'NR1 finance panel — withdrawal queue and status codes.',cf:83},{tl:'Sub-process',tc:'#FAECE7',tb:'#F0997B',tt:'#712B13',ti:'KYC cancellation triggers',td:'Conditions under which withdrawal is auto-cancelled.',cf:89},{tl:'Unclassified',tc:'#fafafa',tb:'#e5e5e5',tt:'#777',ti:'Footnote / reference',td:'Page footer reference to compliance policy v2.4.',cf:44}],kw:['KYC','trigger','NR1 queue','status code']},
+  {blocks:[{t:'section',l:'Section heading',i:'H',n:2,a:true,bg:'#fdf4ff',ic:'#a855f7'},{t:'heading',l:'Heading',i:'h',n:3,a:true,bg:'#fefce8',ic:'#f59e0b'},{t:'body',l:'Body text',i:'B',n:5,a:true,bg:'#f5f5f5',ic:'#888'},{t:'bullet',l:'Bullet list',i:'·',n:3,a:true,bg:'#fff7ed',ic:'#f97316'},{t:'keyword',l:'Keywords',i:'K',n:5,a:true,bg:'#f0fdf4',ic:'#16a34a'}],
+   tiles:[{tl:'Section header',tc:'#f0fdf4',tb:'#bbf7d0',tt:'#166534',ti:'CS-assisted cancellation',td:'Agent-led cancellation process on behalf of the player.',cf:96},{tl:'Actor',tc:'#EEEDFE',tb:'#AFA9EC',tt:'#3C3489',ti:'CS Agent — primary actor',td:'Agent owns cancellation; must verify player identity.',cf:98},{tl:'Process',tc:'#FAEEDA',tb:'#EF9F27',tt:'#633806',ti:'Agent steps — CS-assisted',td:'Verify, locate in NR1, cancel, confirm to player.',cf:94},{tl:'Fact',tc:'#fff7ed',tb:'#fed7aa',tt:'#9a3412',ti:'Cancellation window — 24h',td:'Withdrawals older than 24h require Team Lead approval.',cf:99}],kw:['CS agent','identity','24h window','Team Lead']},
+  {blocks:[{t:'title',l:'Title',i:'T',n:1,a:true,bg:'#eff6ff',ic:'#3b82f6'},{t:'subtitle',l:'Subtitle',i:'s',n:1,a:true,bg:'#f0fdf4',ic:'#22c55e'},{t:'body',l:'Body text',i:'B',n:2,a:true,bg:'#f5f5f5',ic:'#888'},{t:'screenshot',l:'Screenshot',i:'S',n:2,a:true,bg:'#f5f3ff',ic:'#7c3aed'},{t:'keyword',l:'Keywords',i:'K',n:2,a:false,bg:'#f0fdf4',ic:'#16a34a'}],
+   tiles:[{tl:'Category header',tc:'#FAECE7',tb:'#F0997B',tt:'#712B13',ti:'KYC & Verification',td:'Chapter opening — KYC requirements and DVS check procedure.',cf:95},{tl:'Screenshot',tc:'#f5f3ff',tb:'#ddd6fe',tt:'#5b21b6',ti:'DVS portal — UI screen',td:'Two screenshots of DVS check interface.',cf:78},{tl:'Unclassified',tc:'#fafafa',tb:'#e5e5e5',tt:'#777',ti:'Chapter intro text',td:'Contextual intro — no discrete process steps.',cf:52}],kw:['KYC','DVS','verification','identity','portal']},
+];
+
+var DIAGRAMS={
+  with:{w:1000,h:280,nodes:[
+    {id:'s',x:24,y:116,type:'start'},
+    {id:'n1',x:90,y:90,w:150,h:52,label:'Withdrawal request',sub:'Player submits via cashier'},
+    {id:'d1',x:290,y:96,label:'Status check',sub:'NR1 lookup'},
+    {id:'n2',x:382,y:48,w:148,h:52,label:'Pending',sub:'Awaiting processing'},
+    {id:'n3',x:382,y:124,w:148,h:52,label:'Cancelled / Declined',sub:'Return to player'},
+    {id:'n4',x:382,y:200,w:148,h:52,label:'Complete',sub:'Funds released'},
+    {id:'d2',x:584,y:54,label:'CS action?',sub:'Agent review'},
+    {id:'n5',x:672,y:16,w:152,h:52,label:'CS-assisted cancel',sub:'Agent confirms in NR1'},
+    {id:'n6',x:672,y:90,w:152,h:52,label:'Status tracking',sub:'Monitor until resolved'},
+    {id:'d3',x:882,y:54,label:'Resolved?'},
+    {id:'e',x:946,y:116,type:'end'},
+  ],edges:[
+    {f:'s',t:'n1'},{f:'n1',t:'d1'},{f:'d1',t:'n2',lbl:'pending'},{f:'d1',t:'n3',lbl:'declined'},{f:'d1',t:'n4',lbl:'complete'},
+    {f:'n2',t:'d2'},{f:'n3',t:'e'},{f:'n4',t:'e'},{f:'d2',t:'n5',lbl:'yes'},{f:'d2',t:'n6',lbl:'no'},
+    {f:'n5',t:'d3'},{f:'n6',t:'d3'},{f:'d3',t:'e',lbl:'yes'},
+  ]},
+  risk:{w:1000,h:280,nodes:[
+    {id:'s',x:24,y:116,type:'start'},
+    {id:'n1',x:90,y:90,w:142,h:52,label:'Request ID docs',sub:'Govt-issued ID required'},
+    {id:'d1',x:282,y:96,label:'DVS check',sub:'Identity verify'},
+    {id:'n2',x:372,y:48,w:142,h:52,label:'DVS passed',sub:'Identity confirmed'},
+    {id:'n3',x:372,y:140,w:142,h:52,label:'DVS failed',sub:'Inconclusive result'},
+    {id:'d2',x:568,y:54,label:'KYC clear?'},
+    {id:'n4',x:656,y:16,w:142,h:52,label:'Account verified',sub:'NR1 flag updated'},
+    {id:'n5',x:656,y:90,w:142,h:52,label:'Manual review',sub:'Team Lead assigned'},
+    {id:'d3',x:568,y:160,label:'AML flag?'},
+    {id:'n6',x:656,y:190,w:142,h:52,label:'AML escalation',sub:'Risk team notified'},
+    {id:'e',x:858,y:116,type:'end'},
+  ],edges:[
+    {f:'s',t:'n1'},{f:'n1',t:'d1'},{f:'d1',t:'n2',lbl:'pass'},{f:'d1',t:'n3',lbl:'fail'},
+    {f:'n2',t:'d2'},{f:'n3',t:'d3'},{f:'d2',t:'n4',lbl:'yes'},{f:'d2',t:'n5',lbl:'no'},
+    {f:'d3',t:'n6',lbl:'yes'},{f:'d3',t:'e',lbl:'no'},{f:'n4',t:'e'},{f:'n5',t:'e'},{f:'n6',t:'e'},
+  ]},
+  pay:{w:960,h:270,nodes:[
+    {id:'s',x:24,y:110,type:'start'},
+    {id:'n1',x:90,y:84,w:138,h:52,label:'Deposit initiated',sub:'Player selects method'},
+    {id:'d1',x:278,y:90,label:'PSP valid?'},
+    {id:'n2',x:368,y:48,w:138,h:52,label:'PSP processes',sub:'Transaction submitted'},
+    {id:'n3',x:368,y:130,w:138,h:52,label:'Method rejected',sub:'Player notified'},
+    {id:'d2',x:560,y:54,label:'Confirmed?',sub:'PSP response'},
+    {id:'n4',x:648,y:16,w:138,h:52,label:'Funds credited',sub:'NR1 balance updated'},
+    {id:'n5',x:648,y:90,w:148,h:52,label:'Retry / escalate',sub:'CS ticket opened'},
+    {id:'n6',x:368,y:206,w:138,h:44,label:'Alt method offered',sub:'CS recommends option'},
+    {id:'e',x:848,y:110,type:'end'},
+  ],edges:[
+    {f:'s',t:'n1'},{f:'n1',t:'d1'},{f:'d1',t:'n2',lbl:'yes'},{f:'d1',t:'n3',lbl:'no'},
+    {f:'n2',t:'d2'},{f:'n3',t:'n6'},{f:'d2',t:'n4',lbl:'yes'},{f:'d2',t:'n5',lbl:'no'},
+    {f:'n4',t:'e'},{f:'n5',t:'e'},{f:'n6',t:'e'},
+  ]},
+  acct:{w:920,h:250,nodes:[
+    {id:'s',x:24,y:100,type:'start'},
+    {id:'n1',x:90,y:74,w:140,h:52,label:'Player registers',sub:'Form submitted'},
+    {id:'d1',x:280,y:80,label:'Email verified?'},
+    {id:'n2',x:370,y:38,w:140,h:52,label:'Account created',sub:'Welcome email sent'},
+    {id:'n3',x:370,y:120,w:140,h:52,label:'Resend verification',sub:'Retry link sent'},
+    {id:'d2',x:564,y:44,label:'KYC req?'},
+    {id:'n4',x:652,y:8,w:140,h:52,label:'KYC triggered',sub:'Docs requested'},
+    {id:'n5',x:652,y:82,w:140,h:52,label:'Account active',sub:'Full access granted'},
+    {id:'e',x:852,y:100,type:'end'},
+  ],edges:[
+    {f:'s',t:'n1'},{f:'n1',t:'d1'},{f:'d1',t:'n2',lbl:'yes'},{f:'d1',t:'n3',lbl:'no'},
+    {f:'n2',t:'d2'},{f:'n3',t:'d1'},{f:'d2',t:'n4',lbl:'yes'},{f:'d2',t:'n5',lbl:'no'},{f:'n4',t:'e'},{f:'n5',t:'e'},
+  ]},
+  safe:{w:920,h:270,nodes:[
+    {id:'s',x:24,y:112,type:'start'},
+    {id:'n1',x:90,y:86,w:140,h:52,label:'Exclusion request',sub:'Player or agent trigger'},
+    {id:'d1',x:280,y:92,label:'RG flag?'},
+    {id:'n2',x:370,y:50,w:140,h:52,label:'Self-exclusion lock',sub:'Applied via Zendesk'},
+    {id:'n3',x:370,y:132,w:140,h:52,label:'Compliance escalate',sub:'Risk team notified'},
+    {id:'d2',x:564,y:56,label:'Cooldown?'},
+    {id:'n4',x:652,y:18,w:132,h:52,label:'Temp exclusion',sub:'30 / 90 / 180 days'},
+    {id:'n5',x:652,y:92,w:132,h:52,label:'Permanent block',sub:'Account closed'},
+    {id:'e',x:844,y:112,type:'end'},
+  ],edges:[
+    {f:'s',t:'n1'},{f:'n1',t:'d1'},{f:'d1',t:'n2',lbl:'no'},{f:'d1',t:'n3',lbl:'yes'},
+    {f:'n2',t:'d2'},{f:'n3',t:'e'},{f:'d2',t:'n4',lbl:'temp'},{f:'d2',t:'n5',lbl:'perm'},{f:'n4',t:'e'},{f:'n5',t:'e'},
+  ]},
+  bonus:{w:900,h:250,nodes:[
+    {id:'s',x:24,y:104,type:'start'},
+    {id:'n1',x:90,y:78,w:132,h:52,label:'Bonus triggered',sub:'Deposit / promo event'},
+    {id:'d1',x:272,y:84,label:'Eligible?'},
+    {id:'n2',x:360,y:42,w:140,h:52,label:'Bonus calculated',sub:'Amount determined'},
+    {id:'n3',x:360,y:124,w:140,h:52,label:'Bonus declined',sub:'Player ineligible'},
+    {id:'d2',x:554,y:48,label:'Wagered?'},
+    {id:'n4',x:642,y:10,w:132,h:52,label:'Bonus released',sub:'Added to balance'},
+    {id:'n5',x:642,y:84,w:132,h:52,label:'Pending wager',sub:'Progress tracked'},
+    {id:'e',x:836,y:104,type:'end'},
+  ],edges:[
+    {f:'s',t:'n1'},{f:'n1',t:'d1'},{f:'d1',t:'n2',lbl:'yes'},{f:'d1',t:'n3',lbl:'no'},
+    {f:'n2',t:'d2'},{f:'n3',t:'e'},{f:'d2',t:'n4',lbl:'yes'},{f:'d2',t:'n5',lbl:'no'},{f:'n4',t:'e'},{f:'n5',t:'e'},
+  ]},
+  sport:{w:880,h:250,nodes:[
+    {id:'s',x:24,y:104,type:'start'},
+    {id:'n1',x:90,y:78,w:132,h:52,label:'Bet placed',sub:'Market & odds selected'},
+    {id:'d1',x:272,y:84,label:'Accepted?'},
+    {id:'n2',x:360,y:42,w:132,h:52,label:'Bet confirmed',sub:'Slip issued'},
+    {id:'n3',x:360,y:124,w:132,h:52,label:'Bet rejected',sub:'Odds changed / limit'},
+    {id:'d2',x:546,y:48,label:'Settled?'},
+    {id:'n4',x:634,y:10,w:132,h:52,label:'Winnings paid',sub:'Balance updated'},
+    {id:'n5',x:634,y:84,w:132,h:52,label:'Void processed',sub:'Stake returned'},
+    {id:'e',x:826,y:104,type:'end'},
+  ],edges:[
+    {f:'s',t:'n1'},{f:'n1',t:'d1'},{f:'d1',t:'n2',lbl:'yes'},{f:'d1',t:'n3',lbl:'no'},
+    {f:'n2',t:'d2'},{f:'n3',t:'e'},{f:'d2',t:'n4',lbl:'win'},{f:'d2',t:'n5',lbl:'void'},{f:'n4',t:'e'},{f:'n5',t:'e'},
+  ]},
+  data:{w:920,h:260,nodes:[
+    {id:'s',x:24,y:108,type:'start'},
+    {id:'n1',x:90,y:82,w:140,h:52,label:'Ticket opened',sub:'Player contacts CS'},
+    {id:'d1',x:280,y:88,label:'Category?'},
+    {id:'n2',x:370,y:42,w:140,h:52,label:'Tech support',sub:'System / login issue'},
+    {id:'n3',x:370,y:124,w:140,h:52,label:'Account query',sub:'Data / settings'},
+    {id:'d2',x:564,y:48,label:'Escalate?'},
+    {id:'n4',x:652,y:10,w:142,h:52,label:'Team Lead assigned',sub:'Zendesk escalation'},
+    {id:'n5',x:652,y:84,w:142,h:52,label:'Ticket resolved',sub:'CSAT survey sent'},
+    {id:'e',x:852,y:108,type:'end'},
+  ],edges:[
+    {f:'s',t:'n1'},{f:'n1',t:'d1'},{f:'d1',t:'n2',lbl:'tech'},{f:'d1',t:'n3',lbl:'account'},
+    {f:'n2',t:'d2'},{f:'n3',t:'d2'},{f:'d2',t:'n4',lbl:'yes'},{f:'d2',t:'n5',lbl:'no'},{f:'n4',t:'e'},{f:'n5',t:'e'},
+  ]},
+};
+
+var PROCESSES=[
+  {id:1,label:'Withdrawal Request Initiation',type:'subprocess',cluster:'with',conn:'→ Status Tracking',steps:[{id:'1.1',icon:'action',label:'System creates withdrawal request',type:'action',conn:''},{id:'1.2',icon:'decision',label:'Withdrawal status?',type:'decision',conn:'→ Status Tracking'}]},
+  {id:2,label:'Withdrawal Status Tracking',type:'subprocess',cluster:'with',conn:'→ Player Cancellation',steps:[{id:'2.1',icon:'action',label:'Pending status',type:'action',conn:''},{id:'2.2',icon:'action',label:'Cancelled / Declined',type:'action',conn:''},{id:'2.3',icon:'action',label:'Complete status',type:'action',conn:''}]},
+  {id:3,label:'Player-Initiated Cancellation',type:'subprocess',cluster:'with',conn:'→ CS-Assisted · KYC',steps:[{id:'3.1',icon:'action',label:'Player accesses Cashier tab',type:'action',conn:''},{id:'3.2',icon:'decision',label:'Cancellation available?',type:'decision',conn:''},{id:'3.3',icon:'action',label:'Player confirms cancellation',type:'action',conn:''}]},
+  {id:4,label:'CS-Assisted Cancellation',type:'subprocess',cluster:'data',conn:'→ Withdrawals · KYC',steps:[{id:'4.1',icon:'action',label:'Agent verifies player identity',type:'action',conn:'→ KYC Verification'},{id:'4.2',icon:'decision',label:'Within 24h window?',type:'decision',conn:'→ Team Lead escalation'},{id:'4.3',icon:'action',label:'Agent cancels and confirms',type:'action',conn:''}]},
+  {id:5,label:'KYC Cancellation Triggers',type:'process',cluster:'risk',conn:'→ Withdrawals cluster',steps:[{id:'5.1',icon:'action',label:'KYC flag raised on account',type:'action',conn:''},{id:'5.2',icon:'decision',label:'KYC cleared within SLA?',type:'decision',conn:''}]},
+  {id:6,label:'Self-Exclusion & RG Lock',type:'process',cluster:'safe',conn:'→ Account Status',steps:[{id:'6.1',icon:'action',label:'Player requests self-exclusion',type:'action',conn:''},{id:'6.2',icon:'decision',label:'RG flag active?',type:'decision',conn:'→ Compliance'}]},
+];
+
+/* STATE */
+var expanded={},activeCluster='all',s5cl='with';
+var scale=1,panX=30,panY=30,tool='select',isPanning=false,lastMX=0,lastMY=0;
+var alphas='ABCDEFGH';
+var typeOpts=['subprocess','process','action','decision','start','end','fact','context','actor'];
+
+function ha(h,a){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return'rgba('+r+','+g+','+b+','+a+')';}
+
+/* ── NAV ── */
+function go(d){
+  var next=Math.max(1,Math.min(6,cur+d));
+  document.getElementById('p'+cur).classList.remove('on');
+  document.getElementById('p'+next).classList.add('on');
+  [1,2,3,4,5,6].forEach(function(i){
+    var dt=document.getElementById('d'+i),lb=document.getElementById('l'+i);
+    dt.className='dot '+(i<next?'done':i===next?'act':'idle');
+    dt.textContent=i<next?'✓':i;
+    lb.className='slbl'+(i===next?' act':'');
+  });
+  cur=next;
+  document.getElementById('htitle').textContent=TITLES[cur-1];
+  document.getElementById('hsub').textContent=SUBS[cur-1];
+  document.getElementById('sinfo').textContent='Step '+cur+' of 6';
+  document.getElementById('bback').style.visibility=cur>1?'visible':'hidden';
+  var nb=document.getElementById('bnext');
+  if(cur===6){nb.textContent='Open in editor →';nb.onclick=function(){alert('Opening editor…')}}
+  else if(cur===5){nb.textContent='Run import →';nb.onclick=function(){go(1)}}
+  else{nb.textContent='Continue →';nb.onclick=function(){go(1)}}
+
+  /* pills */
+  var pb=document.getElementById('pbar');
+  if(cur===2||cur===3||cur===4||cur===5){pb.style.display='flex';pb.innerHTML=PILLS_HTML;attachPillFilter(pb);}
+  else pb.style.display='none';
+  /* step inits */
+  if(cur===2)pmRender();
+  if(cur===4){buildBar();renderList();}
+  if(cur===5){buildCFilter();scale=1;panX=30;panY=30;renderDiagram();applyTx();}
+}
+
+function attachPillFilter(pb){
+  pb.addEventListener('click',function(e){
+    var p=e.target.closest('.pill');if(!p)return;
+    var all=pb.querySelectorAll('.pill');
+    if(p===all[0]){all.forEach(function(x){x.classList.remove('off')});return;}
+    all.forEach(function(x){x.classList.toggle('off',x!==p)});
+  });
+}
+
+/* ── S1 ── */
+function showFiles(){document.getElementById('flist').style.display='flex';}
+function pick(el){
+  document.querySelectorAll('.fi').forEach(function(e){e.classList.remove('sel');var ck=e.querySelector('.fck');ck.classList.remove('on');ck.innerHTML='';});
+  el.classList.add('sel');var ck=el.querySelector('.fck');ck.classList.add('on');
+  ck.innerHTML='<svg width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+/* ── S2 PAGE MAP ── */
+var pmCur=0;
+function pmRender(){
+  var p=PM_PAGES[pmCur];
+  document.getElementById('pmI').value=pmCur+1;
+  document.getElementById('pmP').disabled=pmCur===0;
+  document.getElementById('pmN').disabled=pmCur===PM_PAGES.length-1;
+  document.getElementById('pgS').innerHTML=p.blocks.map(function(b){return'<div class="pg-bl'+(b.a?' a':'')+'"><div class="pg-ic" style="background:'+b.bg+';color:'+b.ic+'">'+b.i+'</div><span class="pg-lb">'+b.l+'</span><span class="pg-ct">'+b.n+'</span></div>';}).join('');
+  document.getElementById('pgR').innerHTML=p.tiles.map(function(t){return'<div class="ctile"><div class="tth" style="background:'+t.tc+'"><span class="ttype" style="background:'+t.tb+';color:'+t.tt+'">'+t.tl+'</span><span class="ttitle" style="color:'+t.tt+'">'+t.ti+'</span></div><div class="ttb"><div class="tdesc">'+t.td+'</div><div class="tbar"><span class="tbl">Confidence</span><div class="ttrk"><div class="tfil" style="width:0%;background:'+t.tt+'" data-w="'+t.cf+'"></div></div><span class="tpct">'+t.cf+'%</span></div></div></div>';}).join('');
+  setTimeout(function(){document.querySelectorAll('.tfil').forEach(function(el){el.style.width=el.getAttribute('data-w')+'%';});},60);
+  document.getElementById('pmF').innerHTML='<span class="kwl">Keywords</span>'+p.kw.map(function(k){return'<span class="kwtag">'+k+'</span>';}).join('');
+}
+function pmGo(d){var n=pmCur+d;if(n<0||n>=PM_PAGES.length)return;pmCur=n;pmRender();}
+function pmJump(v){var n=parseInt(v)-1;if(isNaN(n))return;pmCur=Math.max(0,Math.min(PM_PAGES.length-1,n));pmRender();}
+
+/* ── S3 ── */
+function selMod(el){
+  document.querySelectorAll('.mopt:not(.add)').forEach(function(m){m.classList.remove('on');});
+  el.classList.add('on');
+}
+
+/* ── S4 CLUSTER BAR ── */
+function buildBar(){
+  var sc=document.getElementById('cscroll');
+  sc.innerHTML=CLUSTERS.map(function(c,i){
+    var alpha=alphas[i]||String(i+1),lines=c.name.split('\n');
+    var themes=c.themes.map(function(t){return'<span class="ctheme" style="background:'+t.bg+';border-color:'+t.bc+';color:'+t.tc+'">'+t.l+'</span>';}).join('');
+    return'<div class="cbox" draggable="true" data-idx="'+i+'" data-cid="'+c.id+'" style="border-left-color:'+c.color+'">'
+      +'<div class="ctop"><div class="calpha" style="background:'+c.color+'">'+alpha+'</div><div class="cdrag">⠿</div></div>'
+      +'<div class="cname">'+lines.join('<br>')+'</div><div class="ccount">'+c.count+' processes</div>'
+      +'<div class="cthemes">'+themes+'</div></div>';
+  }).join('');
+  sc.querySelectorAll('.cbox').forEach(function(box){
+    box.addEventListener('click',function(){filterCl(box.dataset.cid);});
+    box.addEventListener('dragstart',function(e){e.dataTransfer.setData('text/plain',box.dataset.idx);setTimeout(function(){box.classList.add('dragging-item');},0);});
+    box.addEventListener('dragend',function(){box.classList.remove('dragging-item');sc.querySelectorAll('.cbox').forEach(function(b){b.classList.remove('drag-over');});});
+    box.addEventListener('dragover',function(e){e.preventDefault();sc.querySelectorAll('.cbox').forEach(function(b){b.classList.remove('drag-over');});if(box.dataset.idx!==e.dataTransfer.getData('text/plain'))box.classList.add('drag-over');});
+    box.addEventListener('dragleave',function(){box.classList.remove('drag-over');});
+    box.addEventListener('drop',function(e){e.preventDefault();var from=parseInt(e.dataTransfer.getData('text/plain')),to=parseInt(box.dataset.idx);if(from===to)return;var m=CLUSTERS.splice(from,1)[0];CLUSTERS.splice(to,0,m);buildBar();updateActive();renderList();});
+  });
+  updateActive();
+}
+function updateActive(){document.querySelectorAll('.cbox').forEach(function(b){b.classList.toggle('active',b.dataset.cid===activeCluster);b.classList.toggle('dimmed',activeCluster!=='all'&&b.dataset.cid!==activeCluster);});}
+function filterCl(id){activeCluster=activeCluster===id?'all':id;updateActive();renderList();}
+
+/* S4 PROCESS LIST */
+function tsel(val,cl){
+  var s='<select class="tsel" style="background:'+cl.tc+';border-color:'+cl.bc+';color:'+cl.color+'" onclick="event.stopPropagation()">';
+  typeOpts.forEach(function(o){s+='<option'+(o===val?' selected':'')+'>'+o+'</option>';});
+  return s+'</select>';
+}
+function renderList(){
+  var list=document.getElementById('slist'),html='',shown={};
+  var filtered=activeCluster==='all'?PROCESSES:PROCESSES.filter(function(p){return p.cluster===activeCluster;});
+  filtered.forEach(function(ph){
+    var cl=CLUSTERS.find(function(c){return c.id===ph.cluster;})||CLUSTERS[0];
+    var ci=CLUSTERS.indexOf(cl),alpha=alphas[ci]||'?';
+    if(!shown[cl.id]){
+      shown[cl.id]=true;
+      html+='<div class="gh"><div class="gha" style="background:'+cl.color+'">'+alpha+'</div>'
+        +'<span class="ghp" style="background:'+cl.tc+';border-color:'+cl.bc+';color:'+cl.color+'">'+cl.name.replace('\n',' ')+'</span>'
+        +'<span class="ghc">'+cl.count+' processes</span></div>';
+    }
+    var isExp=expanded[ph.id];
+    html+='<div class="pw"><div class="pr'+(isExp?' exp':'')+'" style="border-color:'+(isExp?cl.color:'var(--bd)')+';background:'+(isExp?cl.tc:'var(--bg2)')+'">'
+      +'<div class="pnum" style="background:'+cl.color+'" onclick="tog('+ph.id+',event)">'+ph.id+'</div>'
+      +'<svg width="13" height="13" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2" fill="none" stroke="'+cl.color+'" stroke-width="1.5"/></svg>'
+      +'<div style="overflow:hidden"><div class="plbl" onclick="editLbl(this,event)">'+ph.label+'</div>'+(ph.conn?'<div class="pconn">'+ph.conn+'</div>':'')+'</div>'
+      +tsel(ph.type,cl)+'<div class="xbtn" onclick="remPh('+ph.id+',event)">×</div></div>';
+    if(isExp){
+      html+='<div class="stw">';
+      ph.steps.forEach(function(s){
+        var ic=s.icon==='decision'?'<polygon points="7,1 13,7 7,13 1,7" fill="'+cl.color+'"/>':'<rect x="2" y="2" width="10" height="10" rx="2" fill="'+cl.color+'" opacity=".7"/>';
+        html+='<div class="str" style="background:'+ha(cl.color,.03)+'"><span class="snum">'+s.id+'</span>'
+          +'<svg width="12" height="12" viewBox="0 0 14 14">'+ic+'</svg>'
+          +'<div style="overflow:hidden"><div class="slbx">'+s.label+'</div>'+(s.conn?'<div class="scn">'+s.conn+'</div>':'')+'</div>'
+          +tsel(s.type,cl)+'<div class="xbtn" style="font-size:7px">×</div></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  list.innerHTML=html;
+}
+function tog(id,e){e.stopPropagation();expanded[id]=!expanded[id];renderList();}
+function remPh(id,e){e.stopPropagation();PROCESSES=PROCESSES.filter(function(p){return p.id!==id;});renderList();}
+function editLbl(el,e){
+  e.stopPropagation();el.contentEditable=true;el.focus();
+  el.style.outline='1px solid var(--t1)';el.style.borderRadius='2px';el.style.padding='0 2px';
+  el.onblur=function(){el.contentEditable=false;el.style.outline='';el.style.padding='';};
+  el.onkeydown=function(ev){if(ev.key==='Enter'){el.blur();ev.preventDefault();}};
+}
+
+/* ── S5 CANVAS ── */
+function buildCFilter(){
+  var cf=document.getElementById('cfilter');cf.innerHTML='';
+  CLUSTERS.forEach(function(c,i){
+    var el=document.createElement('span');
+    el.className='ctag'+(c.id===s5cl?' active':'');
+    el.style.cssText='background:'+c.tc+';border-color:'+c.bc+';color:'+c.color;
+    el.textContent=c.name.replace('\n',' ');
+    el.onclick=function(){
+      s5cl=c.id;
+      document.querySelectorAll('.ctag').forEach(function(t,j){t.classList.toggle('active',CLUSTERS[j].id===c.id);t.classList.remove('dimmed');});
+      scale=1;panX=30;panY=30;
+      renderDiagram();applyTx();
+    };
+    cf.appendChild(el);
+  });
+}
+
+function setTool(t){
+  tool=t;
+  document.getElementById('tbSel').classList.toggle('on',t==='select');
+  document.getElementById('tbHand').classList.toggle('on',t==='hand');
+  var vp=document.getElementById('vp');
+  vp.className='viewport'+(t==='hand'?' hand':'');
+}
+function doZoom(d){scale=Math.max(0.25,Math.min(3,scale+d));applyTx();}
+function resetView(){scale=1;panX=30;panY=30;applyTx();}
+function fitView(){scale=0.82;panX=20;panY=20;applyTx();}
+function applyTx(){
+  document.getElementById('ci').style.transform='translate('+panX+'px,'+panY+'px) scale('+scale+')';
+  document.getElementById('zoomLbl').textContent=Math.round(scale*100)+'%';
+  updateMM();
+}
+var vp=document.getElementById('vp');
+vp.addEventListener('mousedown',function(e){if(tool!=='hand')return;isPanning=true;lastMX=e.clientX;lastMY=e.clientY;vp.classList.add('panning');});
+window.addEventListener('mousemove',function(e){if(!isPanning)return;panX+=e.clientX-lastMX;panY+=e.clientY-lastMY;lastMX=e.clientX;lastMY=e.clientY;applyTx();});
+window.addEventListener('mouseup',function(){isPanning=false;vp.classList.remove('panning');});
+vp.addEventListener('wheel',function(e){e.preventDefault();doZoom(e.deltaY>0?-0.08:0.08);},{passive:false});
+window.addEventListener('keydown',function(e){if(cur!==5)return;if(e.key==='v'||e.key==='V')setTool('select');if(e.key==='h'||e.key==='H')setTool('hand');});
+
+function nCenter(n){
+  if(n.type==='start'||n.type==='end')return{x:n.x+14,y:n.y+14};
+  if(!n.w)return{x:n.x+26,y:n.y+24};
+  return{x:n.x+n.w/2,y:n.y+n.h/2};
+}
+function nEdge(n,side){
+  var c=nCenter(n);
+  if(n.type==='start'||n.type==='end'){return side==='r'?{x:n.x+28,y:c.y}:side==='l'?{x:n.x,y:c.y}:side==='b'?{x:c.x,y:n.y+28}:{x:c.x,y:n.y};}
+  if(!n.w){return side==='r'?{x:n.x+52,y:c.y}:side==='l'?{x:n.x,y:c.y}:side==='b'?{x:c.x,y:n.y+48}:{x:c.x,y:n.y};}
+  return side==='r'?{x:n.x+n.w,y:c.y}:side==='l'?{x:n.x,y:c.y}:side==='b'?{x:c.x,y:n.y+n.h}:{x:c.x,y:n.y};
+}
+
+function renderDiagram(){
+  var diag=DIAGRAMS[s5cl]||DIAGRAMS['with'];
+  var cl=CLUSTERS.find(function(c){return c.id===s5cl;})||CLUSTERS[1];
+  var nmap={};diag.nodes.forEach(function(n){nmap[n.id]=n;});
+  var defs='<defs><marker id="mh" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#999" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>';
+  var edges=diag.edges.map(function(e){
+    var fn=nmap[e.f],tn=nmap[e.t];if(!fn||!tn)return'';
+    var from=nEdge(fn,'r'),to=nEdge(tn,'l');
+    var dy=Math.abs(from.y-to.y),path,lx,ly;
+    if(dy<10){path='M'+from.x+' '+from.y+' L'+(to.x-2)+' '+to.y;lx=(from.x+to.x)/2;ly=from.y-7;}
+    else{var mx=(from.x+to.x)/2;path='M'+from.x+' '+from.y+' L'+mx+' '+from.y+' L'+mx+' '+to.y+' L'+(to.x-2)+' '+to.y;lx=mx;ly=(from.y+to.y)/2-5;}
+    var lbl=e.lbl?'<text x="'+lx+'" y="'+ly+'" text-anchor="middle" font-size="8.5" fill="#666" font-family="sans-serif" font-weight="500">'+e.lbl+'</text>':'';
+    return'<path d="'+path+'" fill="none" stroke="#b0b0b0" stroke-width="1.2" marker-end="url(#mh)"/>'+lbl;
+  }).join('');
+  var nodes=diag.nodes.map(function(n){
+    if(n.type==='start')return'<circle cx="'+(n.x+14)+'" cy="'+(n.y+14)+'" r="14" fill="#22c55e"/><text x="'+(n.x+14)+'" y="'+(n.y+19)+'" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif" font-weight="700">Start</text>';
+    if(n.type==='end')return'<circle cx="'+(n.x+14)+'" cy="'+(n.y+14)+'" r="14" fill="#ef4444"/><text x="'+(n.x+14)+'" y="'+(n.y+19)+'" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif" font-weight="700">End</text>';
+    if(!n.w){
+      var cx=n.x+26,cy=n.y+24;
+      var pts=cx+','+(cy-24)+' '+(cx+30)+','+cy+' '+cx+','+(cy+24)+' '+(cx-30)+','+cy;
+      var ls=n.label.split(' '),ty=n.sub?cy-6:cy+3;
+      var lt=ls.map(function(w,i){return'<tspan x="'+cx+'" dy="'+(i===0?'0':'1.1em')+'">'+w+'</tspan>';}).join('');
+      return'<polygon points="'+pts+'" fill="#FFFDE7" stroke="#C9960A" stroke-width="1.5"/>'
+        +'<text x="'+cx+'" y="'+ty+'" text-anchor="middle" dominant-baseline="central" font-size="8.5" fill="#7A5200" font-family="sans-serif" font-weight="600">'+lt+'</text>'
+        +(n.sub?'<text x="'+cx+'" y="'+(cy+16)+'" text-anchor="middle" font-size="7.5" fill="#7A5200" font-family="sans-serif" opacity=".6">'+n.sub+'</text>':'');
+    }
+    var tx=n.x+n.w/2,ty1=n.y+(n.sub?n.h/2-8:n.h/2);
+    return'<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+n.h+'" rx="7" fill="#EBF2FF" stroke="#3B7DE8" stroke-width="1.5"/>'
+      +'<text x="'+tx+'" y="'+ty1+'" text-anchor="middle" dominant-baseline="central" font-size="9.5" fill="#1A3A7A" font-family="sans-serif" font-weight="600">'+n.label+'</text>'
+      +(n.sub?'<text x="'+tx+'" y="'+(n.y+n.h/2+9)+'" text-anchor="middle" dominant-baseline="central" font-size="8" fill="#1A3A7A" font-family="sans-serif" opacity=".6">'+n.sub+'</text>':'');
+  }).join('');
+  document.getElementById('ci').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="'+(diag.w||900)+'" height="'+(diag.h||280)+'">'+defs+edges+nodes+'</svg>';
+  /* toolbar info */
+  document.getElementById('tbName').textContent=cl.name.replace('\n',' ');
+  var cnt=document.getElementById('tbCnt');cnt.textContent=cl.count+' processes';cnt.style.color=cl.color;cnt.style.borderColor=cl.bc;cnt.style.background=cl.tc;
+  updateMM();
+}
+
+function updateMM(){
+  var diag=DIAGRAMS[s5cl]||DIAGRAMS['with'];
+  var mmW=108,mmH=68,cw=diag.w||900,ch=diag.h||280;
+  var ms=Math.min(mmW/cw,mmH/ch);
+  var mmi=document.getElementById('mmi');
+  mmi.innerHTML=document.getElementById('ci').innerHTML;
+  mmi.style.transform='scale('+ms+')';mmi.style.width=cw+'px';mmi.style.height=ch+'px';
+  var vpW=vp.offsetWidth||780,vpH=vp.offsetHeight||400;
+  var visX=Math.max(0,-panX/scale),visY=Math.max(0,-panY/scale);
+  var mmv=document.getElementById('mmv');
+  mmv.style.left=(visX*ms)+'px';mmv.style.top=(visY*ms)+'px';
+  mmv.style.width=(vpW/scale*ms)+'px';mmv.style.height=(vpH/scale*ms)+'px';
+}
+
+/* ── S6 ── */
+function selFmt(el){
+  document.querySelectorAll('.fmt').forEach(function(f){f.classList.remove('on');f.querySelector('.fmt-ico').style.background='#f0f0f0';f.querySelector('.fmt-ico').style.color='var(--t2)';f.querySelector('.fmt-ck').innerHTML='';});
+  el.classList.add('on');el.querySelector('.fmt-ico').style.background='var(--t1)';el.querySelector('.fmt-ico').style.color='#fff';
+  el.querySelector('.fmt-ck').innerHTML='<svg width="8" height="6" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+
+/* INIT */
+document.getElementById('flist').style.display='flex';
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Sensitive / proprietary documents — never commit to git
+*.pdf
+reference/sample_import_*.pdf
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies (when project is scaffolded)
+node_modules/
+dist/
+.vite/
+
+# Environment
+.env
+.env.local
+.env.*.local
