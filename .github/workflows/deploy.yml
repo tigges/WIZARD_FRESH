@@ -2,7 +2,9 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [cursor/development-environment-setup-b93b, main]
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
@@ -40,6 +42,7 @@ jobs:
           path: wizard/dist
 
   deploy:
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:
