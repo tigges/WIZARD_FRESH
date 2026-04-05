@@ -1,0 +1,45 @@
+# Cursor Rules — Document Import Wizard
+
+## Project context
+This is a React + TypeScript conversion of a fully designed HTML prototype.
+The prototype is at `src/doc_import_wizard_complete.html` — it is the visual source of truth.
+Always open the prototype in a browser when building components to compare.
+
+## Core rules
+- Match the prototype layout exactly — spacing, colours, font sizes, border radii
+- Use inline styles for all cluster/pill colours (hex values from data files)
+- Do not use Tailwind colour names for semantic colours — use tokens.ts values
+- TypeScript strict mode — no `any`, no `@ts-ignore`
+- Zustand for all shared state — no prop drilling beyond 1 level
+- Components should be small and focused — split if >150 lines
+
+## Component conventions
+- One component per file
+- Props interfaces defined at top of file
+- Default exports only for page-level components, named exports for shared components
+- Use `clsx` or template literals for conditional classes — no ternary soup
+
+## Styling conventions
+- Tailwind for layout/spacing utilities only
+- All colours from tokens.ts or data files — inline style
+- Border radius: 8px (--r), 12px (--r2), 16px (--r3)
+- Font sizes: 8px labels, 9px meta, 10px sub, 11px body, 12px default, 14px titles
+
+## Data conventions
+- Never hardcode cluster/process data in components — always import from src/data/
+- Cluster order is user-controlled (drag) — read from clusterStore, not data file directly
+- Diagram node positions are fixed pixel values — do not try to auto-layout
+
+## Canvas / diagram rules
+- Use react-zoom-pan-pinch for the transform wrapper
+- SVG is rendered by hand from diagrams.ts data — no diagram library
+- Minimap: copy SVG innerHTML into minimap div, scale with CSS transform
+- Arrow routing: straight line if Δy < 10px, L-bend otherwise
+- Arrow marker: grey `#b0b0b0`, 5×5, auto-orient
+
+## What NOT to do
+- Do not add features not in the prototype
+- Do not change the 6-step wizard flow
+- Do not add animations beyond what the prototype has (confidence bar width transition only)
+- Do not use any UI component library (no shadcn, no MUI, no Radix beyond primitives)
+- Do not add "Skip to generate" or any extra footer buttons
