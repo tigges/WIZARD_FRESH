@@ -5,20 +5,20 @@ import { clusters as initialClusters } from '../data/clusters';
 interface ClusterState {
   clusters: Cluster[];
   activeCluster: string;
-  reorder: (fromIdx: number, toIdx: number) => void;
   setActive: (id: string) => void;
+  reorder: (from: number, to: number) => void;
 }
 
 export const useClusterStore = create<ClusterState>((set) => ({
-  clusters: [...initialClusters],
+  clusters: initialClusters,
   activeCluster: 'all',
-  reorder: (fromIdx, toIdx) =>
-    set((s) => {
-      const next = [...s.clusters];
-      const [moved] = next.splice(fromIdx, 1);
-      next.splice(toIdx, 0, moved);
-      return { clusters: next };
-    }),
   setActive: (id) =>
     set((s) => ({ activeCluster: s.activeCluster === id ? 'all' : id })),
+  reorder: (from, to) =>
+    set((s) => {
+      const arr = [...s.clusters];
+      const [item] = arr.splice(from, 1);
+      arr.splice(to, 0, item);
+      return { clusters: arr };
+    }),
 }));

@@ -9,11 +9,11 @@ interface ProcessState {
   remove: (id: number) => void;
   updateLabel: (id: number, label: string) => void;
   updateType: (id: number, type: string) => void;
-  updateStepType: (processId: number, stepId: string, type: string) => void;
+  updateStepType: (id: number, stepId: string, type: string) => void;
 }
 
 export const useProcessStore = create<ProcessState>((set) => ({
-  processes: [...initialProcesses],
+  processes: initialProcesses,
   expanded: {},
   toggle: (id) =>
     set((s) => ({ expanded: { ...s.expanded, [id]: !s.expanded[id] } })),
@@ -21,23 +21,27 @@ export const useProcessStore = create<ProcessState>((set) => ({
     set((s) => ({ processes: s.processes.filter((p) => p.id !== id) })),
   updateLabel: (id, label) =>
     set((s) => ({
-      processes: s.processes.map((p) => (p.id === id ? { ...p, label } : p)),
+      processes: s.processes.map((p) =>
+        p.id === id ? { ...p, label } : p,
+      ),
     })),
   updateType: (id, type) =>
     set((s) => ({
-      processes: s.processes.map((p) => (p.id === id ? { ...p, type } : p)),
+      processes: s.processes.map((p) =>
+        p.id === id ? { ...p, type } : p,
+      ),
     })),
-  updateStepType: (processId, stepId, type) =>
+  updateStepType: (id, stepId, type) =>
     set((s) => ({
       processes: s.processes.map((p) =>
-        p.id === processId
+        p.id === id
           ? {
               ...p,
               steps: p.steps.map((st) =>
-                st.id === stepId ? { ...st, type } : st
+                st.id === stepId ? { ...st, type } : st,
               ),
             }
-          : p
+          : p,
       ),
     })),
 }));
