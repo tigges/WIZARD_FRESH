@@ -7,13 +7,13 @@ interface WizardState {
   rawText: string;
   sourceFile: FileMeta | null;
   sampleId: string | null;
-  goTo: (step: number) => void;
   next: () => void;
   back: () => void;
+  goTo: (step: number) => void;
   setInputMode: (mode: InputMode) => void;
   setRawText: (text: string) => void;
-  setSourceFile: (file: FileMeta | null) => void;
-  setSampleId: (id: string | null) => void;
+  setSourceFile: (file: FileMeta) => void;
+  setSampleId: (id: string) => void;
 }
 
 export const useWizardStore = create<WizardState>((set) => ({
@@ -22,11 +22,11 @@ export const useWizardStore = create<WizardState>((set) => ({
   rawText: '',
   sourceFile: null,
   sampleId: null,
-  goTo: (step) => set({ currentStep: Math.max(1, Math.min(6, step)) }),
   next: () => set((s) => ({ currentStep: Math.min(6, s.currentStep + 1) })),
   back: () => set((s) => ({ currentStep: Math.max(1, s.currentStep - 1) })),
-  setInputMode: (mode) => set({ inputMode: mode }),
-  setRawText: (text) => set({ rawText: text }),
-  setSourceFile: (file) => set({ sourceFile: file }),
-  setSampleId: (id) => set({ sampleId: id }),
+  goTo: (step: number) => set({ currentStep: step }),
+  setInputMode: (mode: InputMode) => set({ inputMode: mode }),
+  setRawText: (text: string) => set({ rawText: text }),
+  setSourceFile: (file: FileMeta) => set({ sourceFile: file }),
+  setSampleId: (id: string) => set({ sampleId: id }),
 }));
