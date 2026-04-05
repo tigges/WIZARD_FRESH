@@ -30,6 +30,18 @@ The repository is pre-build. The HTML prototype is complete and functional. No R
 - Tailwind CSS, Zustand, @dnd-kit, react-zoom-pan-pinch, react-dropzone
 - See `reference/package.json.reference` for dependency versions
 
+### Export targets
+
+| Target | Repo | Format | Primary entry point |
+|--------|------|--------|-------------------|
+| Mermaid | `mermaid-js/mermaid` | `.mmd` text | Text generation (no library needed) |
+| BPMN XML | `bpmn-io/bpmn-js` | `.bpmn` XML | `bpmn-moddle` standalone (~100KB) |
+| Process-Map-V1 | `tigges/process-map-V1` | JSON (`ProcessMapProject`) | `importProject(json)` |
+| Workflow-designer | `tigges/Workflow-designer` | JSON (`{title, nodes, connections}`) | `loadFlowObject(json)` |
+| HTML | (self-contained) | `.html` | Template engine generating interactive single-file HTML |
+| JSON / CSV / PDF | (built-in) | various | Direct serialization |
+
 ### Notes
 - The update script (`SetupVmEnvironment`) is currently a no-op. Update it to `pnpm install` once a root `package.json` exists.
 - The HTML prototype can be opened directly in a browser for visual reference — no build step needed for `reference/doc_import_wizard_complete.html`.
+- Sample import PDFs are `.gitignore`d — keep proprietary training docs local only.
