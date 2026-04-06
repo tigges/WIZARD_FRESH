@@ -105,5 +105,6 @@ export async function exportPdf(model: CanonicalModel): Promise<Blob> {
   }
 
   const bytes = await pdf.save();
-  return new Blob([bytes], { type: 'application/pdf' });
+  const normalizedBytes = new Uint8Array(bytes);
+  return new Blob([normalizedBytes.buffer], { type: 'application/pdf' });
 }

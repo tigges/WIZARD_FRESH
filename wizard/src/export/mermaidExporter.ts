@@ -5,13 +5,13 @@ function nodeDeclaration(node: CanonicalModel['clusters'][number]['nodes'][numbe
   const label = sanitizeLabel(node.label || node.description || node.id);
   switch (node.type) {
     case 'start':
-      return `${node.id}((\"${label}\")):::startNode`;
+      return `${node.id}(("${label}")):::startNode`;
     case 'end':
-      return `${node.id}((\"${label}\")):::endNode`;
+      return `${node.id}(("${label}")):::endNode`;
     case 'decision':
-      return `${node.id}{\"${label}\"}:::decisionNode`;
+      return `${node.id}{"${label}"}:::decisionNode`;
     default:
-      return `${node.id}[\"${label}\"]:::actionNode`;
+      return `${node.id}["${label}"]:::actionNode`;
   }
 }
 
