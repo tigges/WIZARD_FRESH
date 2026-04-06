@@ -103,6 +103,14 @@ export function Step6Complete() {
     try {
       const artifact = await buildSingleExportArtifact(selected, exportOverrides);
       downloadArtifact(artifact.filename, artifact.mimeType, artifact.content);
+      if (artifact.format === 'html' && typeof artifact.content === 'string') {
+        const previewBlob = new Blob([artifact.content], { type: artifact.mimeType });
+        const previewUrl = URL.createObjectURL(previewBlob);
+        window.open(previewUrl, '_blank', 'noopener,noreferrer');
+        window.setTimeout(() => {
+          URL.revokeObjectURL(previewUrl);
+        }, 60_000);
+      }
       setStatus(`Downloaded ${artifact.filename}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Export failed';
